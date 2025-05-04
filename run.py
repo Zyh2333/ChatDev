@@ -106,11 +106,13 @@ with open(f"result/2025-05-02-2.txt", mode="r") as rf:
             splits = line.split("$")
             if len(splits) == 6:
                 tasks.append(splits[0])
-if args.name in tasks:
-    print(f"任务 {args.name} 已存在，程序退出。")
+task_name = args.name + "_" + args.org
+if task_name in tasks:
+    print(f"任务 {task_name} 已存在，程序退出。")
     sys.exit(0)
 config_path, config_phase_path, config_role_path = get_config(args.config)
 args2type = {'GPT_3_5_TURBO': ModelType.GPT_3_5_TURBO,
+             'qwen25_32b_instruct': ModelType.qwen25_32b_instruct,
              'GPT_4': ModelType.GPT_4,
             #  'GPT_4_32K': ModelType.GPT_4_32k,
              'GPT_4_TURBO': ModelType.GPT_4_TURBO,
@@ -165,7 +167,7 @@ with open(f"result/2025-05-02-2.txt", mode="a+") as rf:
     executable = 1 if chat_chain.chat_env.executable(software_path) else 0
     similarity_score = similarity.calculate_semantic_similarity(code_str, args.task)
     q = completeness * executable * similarity_score
-    print(f"{args.name}${completeness}${executable}${similarity_score:.4f}${q}${end_t - begin_t}", file=rf)
+    print(f"{task_name}${completeness}${executable}${similarity_score:.4f}${q}${end_t - begin_t}", file=rf)
 
 # ----------------------------------------
 #          Post Processing
