@@ -44,6 +44,7 @@ class RoleType(Enum):
 
 
 class ModelType(Enum):
+    qwen25_32b_instruct = "qwen2.5-32b-instruct"
     GPT_3_5_TURBO = "gpt-3.5-turbo"
     GPT_3_5_TURBO_NEW = "gpt-3.5-turbo"
     GPT_4 = "gpt-4"
