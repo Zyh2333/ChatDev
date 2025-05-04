@@ -15,6 +15,9 @@ import argparse
 import logging
 import os
 import sys
+import similarity
+from datetime import datetime
+import time
 
 from camel.typing import ModelType
 
@@ -89,6 +92,23 @@ args = parser.parse_args()
 # ----------------------------------------
 #          Init ChatChain
 # ----------------------------------------
+begin_t = time.time()
+now = datetime.now().strftime("%Y-%m-%d-%H%M%S")
+suffix = "-2"
+tasks = []
+with open(f"result/2025-05-02-2.txt", mode="r") as rf:
+    i = 0
+    for line in rf.readlines():
+        if i == 0:
+            i += 1
+            continue
+        else:
+            splits = line.split("$")
+            if len(splits) == 6:
+                tasks.append(splits[0])
+if args.name in tasks:
+    print(f"任务 {args.name} 已存在，程序退出。")
+    sys.exit(0)
 config_path, config_phase_path, config_role_path = get_config(args.config)
 args2type = {'GPT_3_5_TURBO': ModelType.GPT_3_5_TURBO,
              'GPT_4': ModelType.GPT_4,
@@ -119,7 +139,7 @@ logging.basicConfig(filename=chat_chain.log_filepath, level=logging.INFO,
 #          Pre Processing
 # ----------------------------------------
 
-chat_chain.pre_processing()
+software_path = chat_chain.pre_processing()
 
 # ----------------------------------------
 #          Personnel Recruitment
@@ -132,6 +152,20 @@ chat_chain.make_recruitment()
 # ----------------------------------------
 
 chat_chain.execute_chain()
+
+end_t = time.time()
+# with open(f"result/{now[:now.rfind('-')]}{suffix}.txt", mode="a+") as rf:
+with open(f"result/2025-05-02-2.txt", mode="a+") as rf:
+    rf.seek(0)
+    if not rf.read():
+        print(f"name$completeness$executable$similarity_score$quality$time", file=rf)
+    rf.seek(0, 2)
+    code_str = chat_chain.chat_env.get_codes()
+    completeness = 0 if " pass " in code_str else 1
+    executable = 1 if chat_chain.chat_env.executable(software_path) else 0
+    similarity_score = similarity.calculate_semantic_similarity(code_str, args.task)
+    q = completeness * executable * similarity_score
+    print(f"{args.name}${completeness}${executable}${similarity_score:.4f}${q}${end_t - begin_t}", file=rf)
 
 # ----------------------------------------
 #          Post Processing

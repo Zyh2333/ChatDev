@@ -76,7 +76,20 @@ class ChatEnv:
         if "ModuleNotFoundError" in test_reports:
             for match in re.finditer(r"No module named '(\S+)'", test_reports, re.DOTALL):
                 module = match.group(1)
-                subprocess.Popen("pip install {}".format(module), shell=True).wait()
+                try:
+                    result = subprocess.run(
+                        f"venv/bin/python -m pip install {module}",
+                        shell=True,
+                        check=True,  # 自动在非零返回码时报错
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        text=True
+                    )
+                    print(result.stdout)
+                except subprocess.CalledProcessError as e:
+                    raise RuntimeError(
+                        f"Failed to install module '{module}':\n{e.stderr}"
+                    ) from e
                 log_visualize("**[CMD Execute]**\n\n[CMD] pip install {}".format(module))
 
     def set_directory(self, directory):
@@ -121,7 +134,7 @@ class ChatEnv:
                     creationflags=subprocess.CREATE_NEW_PROCESS_GROUP
                 )
             else:
-                command = "cd {}; ls -l; python3 main.py;".format(directory)
+                command = "cd {}; ls -l; ../../venv/bin/python main.py;".format(directory)
                 process = subprocess.Popen(command,
                                            shell=True,
                                            preexec_fn=os.setsid,
@@ -129,32 +142,31 @@ class ChatEnv:
                                            stderr=subprocess.PIPE
                                            )
             time.sleep(3)
-            return_code = process.returncode
+            # return_code = process.returncode
             # Check if the software is still running
             if process.poll() is None:
-                if "killpg" in dir(os):
+                if hasattr(os, "killpg"):
                     os.killpg(os.getpgid(process.pid), signal.SIGTERM)
                 else:
                     os.kill(process.pid, signal.SIGTERM)
                     if process.poll() is None:
                         os.kill(process.pid, signal.CTRL_BREAK_EVENT)
 
-            if return_code == 0:
+            return_code = process.wait()
+            stderr_output = process.stderr.read().decode('utf-8', errors='ignore')
+            if return_code == 0 or return_code == -signal.SIGTERM:
                 return False, success_info
             else:
-                error_output = process.stderr.read().decode('utf-8')
-                if error_output:
-                    if "Traceback".lower() in error_output.lower():
-                        errs = error_output.replace(directory + "/", "")
-                        return True, errs
+                if "Traceback" in stderr_output:
+                    return True, f"Traceback detected:\n{stderr_output.strip()}"
+                elif stderr_output.strip():
+                    return True, f"Error output:\n{stderr_output.strip()}"
                 else:
-                    return False, success_info
+                    return True, "Exited with non-zero return code but no stderr."
         except subprocess.CalledProcessError as e:
             return True, f"Error: {e}"
         except Exception as ex:
             return True, f"An error occurred: {ex}"
-
-        return False, success_info
 
     def recruit(self, agent_name: str):
         self.roster._recruit(agent_name)
@@ -308,3 +320,47 @@ class ChatEnv:
                 download(image_url, filename)
 
         return images
+
+    def executable(self, directory) -> bool:
+        try:
+
+            # check if we are on windows or linux
+            if os.name == 'nt':
+                command = "cd {} && dir && python main.py".format(directory)
+                process = subprocess.Popen(
+                    command,
+                    shell=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    creationflags=subprocess.CREATE_NEW_PROCESS_GROUP
+                )
+            else:
+                command = "cd {}; ls -l; ../../venv/bin/python main.py;".format(directory)
+                process = subprocess.Popen(command,
+                                           shell=True,
+                                           preexec_fn=os.setsid,
+                                           stdout=subprocess.PIPE,
+                                           stderr=subprocess.PIPE
+                                           )
+            time.sleep(3)
+            # return_code = process.returncode
+            # Check if the software is still running
+            if process.poll() is None:
+                if hasattr(os, "killpg"):
+                    os.killpg(os.getpgid(process.pid), signal.SIGTERM)
+                else:
+                    os.kill(process.pid, signal.SIGTERM)
+                    if process.poll() is None:
+                        os.kill(process.pid, signal.CTRL_BREAK_EVENT)
+
+            return_code = process.wait()
+
+            if return_code == 0 or return_code == -signal.SIGTERM:
+                return True
+            else:
+                error_output = process.stderr.read().decode('utf-8')
+                return False
+        except subprocess.CalledProcessError as e:
+            return False
+        except Exception as ex:
+            return False

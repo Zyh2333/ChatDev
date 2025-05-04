@@ -544,7 +544,7 @@ class TestErrorSummary(Phase):
         super().__init__(**kwargs)
 
     def update_phase_env(self, chat_env):
-        chat_env.generate_images_from_codes()
+        # chat_env.generate_images_from_codes()
         (exist_bugs_flag, test_reports) = chat_env.exist_bugs()
         self.phase_env.update({"task": chat_env.env_dict['task_prompt'],
                                "modality": chat_env.env_dict['modality'],

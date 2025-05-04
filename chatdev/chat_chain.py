@@ -252,6 +252,7 @@ class ChatChain:
             self.chat_env.env_dict['task_prompt'] = self.task_prompt_raw
         if(check_bool(self.web_spider)):
             self.chat_env.env_dict['task_description'] = modal_trans(self.task_prompt_raw)
+        return software_path
 
     def post_processing(self):
         """

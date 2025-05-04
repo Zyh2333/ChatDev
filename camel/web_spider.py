@@ -1,6 +1,5 @@
 import requests
 from bs4 import BeautifulSoup
-import openai
 from openai import OpenAI
 import wikipediaapi
 import os
@@ -10,12 +9,12 @@ self_api_key = os.environ.get('OPENAI_API_KEY')
 BASE_URL = os.environ.get('BASE_URL')
 
 if BASE_URL:
-    client = openai.OpenAI(
+    client = OpenAI(
         api_key=self_api_key,
         base_url=BASE_URL,
     )
 else:
-    client = openai.OpenAI(
+    client = OpenAI(
         api_key=self_api_key
     )
 
