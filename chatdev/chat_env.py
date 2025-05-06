@@ -78,7 +78,7 @@ class ChatEnv:
                 module = match.group(1)
                 try:
                     result = subprocess.run(
-                        f"venv/bin/python -m pip install {module}",
+                        f"/Volumes/macbookproTi600/zhuyuhan/venv/chatdev/bin/python -m pip install {module}",
                         shell=True,
                         check=True,  # 自动在非零返回码时报错
                         stdout=subprocess.PIPE,
@@ -134,7 +134,7 @@ class ChatEnv:
                     creationflags=subprocess.CREATE_NEW_PROCESS_GROUP
                 )
             else:
-                command = "cd {}; ls -l; ../../venv/bin/python main.py;".format(directory)
+                command = "cd {}; ls -l; /Volumes/macbookproTi600/zhuyuhan/venv/chatdev/bin/python main.py;".format(directory)
                 process = subprocess.Popen(command,
                                            shell=True,
                                            preexec_fn=os.setsid,
@@ -251,21 +251,25 @@ class ChatEnv:
                 if desc.endswith(".png"):
                     desc = desc.replace(".png", "")
                 print("{}: {}".format(filename, desc))
-                if openai_new_api:
-                    response = openai.images.generate(
-                        prompt=desc,
-                        n=1,
-                        size="256x256"
-                    )
-                    image_url = response.data[0].url
-                else:
-                    response = openai.Image.create(
-                        prompt=desc,
-                        n=1,
-                        size="256x256"
-                    )
-                    image_url = response['data'][0]['url']
-                download(image_url, filename)
+                # if openai_new_api:
+                #     response = openai.images.generate(
+                #         prompt=desc,
+                #         n=1,
+                #         size="256x256"
+                #     )
+                #     image_url = response.data[0].url
+                # else:
+                #     response = openai.Image.create(
+                #         prompt=desc,
+                #         n=1,
+                #         size="256x256"
+                #     )
+                #     image_url = response['data'][0]['url']
+                # download(image_url, filename)
+                filepath = os.path.join(self.env_dict['directory'], filename)
+                if os.path.exists(filepath):
+                    os.remove(filepath)
+                shutil.copy('/Users/zhuyuhan/Downloads/img.png', filepath)
 
     def get_proposed_images_from_message(self, messages):
         def download(img_url, file_name):
@@ -302,22 +306,26 @@ class ChatEnv:
                     desc = desc.replace(".png", "")
                 print("{}: {}".format(filename, desc))
 
-                if openai_new_api:
-                    response = openai.images.generate(
-                        prompt=desc,
-                        n=1,
-                        size="256x256"
-                    )
-                    image_url = response.data[0].url
-                else:
-                    response = openai.Image.create(
-                        prompt=desc,
-                        n=1,
-                        size="256x256"
-                    )
-                    image_url = response['data'][0]['url']
-
-                download(image_url, filename)
+                # if openai_new_api:
+                #     response = openai.images.generate(
+                #         prompt=desc,
+                #         n=1,
+                #         size="256x256"
+                #     )
+                #     image_url = response.data[0].url
+                # else:
+                #     response = openai.Image.create(
+                #         prompt=desc,
+                #         n=1,
+                #         size="256x256"
+                #     )
+                #     image_url = response['data'][0]['url']
+                #
+                # download(image_url, filename)
+                filepath = os.path.join(self.env_dict['directory'], filename)
+                if os.path.exists(filepath):
+                    os.remove(filepath)
+                shutil.copy('/Users/zhuyuhan/Downloads/img.png', filepath)
 
         return images
 
@@ -335,7 +343,7 @@ class ChatEnv:
                     creationflags=subprocess.CREATE_NEW_PROCESS_GROUP
                 )
             else:
-                command = "cd {}; ls -l; ../../venv/bin/python main.py;".format(directory)
+                command = "cd {}; ls -l; /Volumes/macbookproTi600/zhuyuhan/venv/chatdev/bin/python main.py;".format(directory)
                 process = subprocess.Popen(command,
                                            shell=True,
                                            preexec_fn=os.setsid,

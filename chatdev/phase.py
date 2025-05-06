@@ -398,7 +398,7 @@ class ArtIntegration(Phase):
     def update_chat_env(self, chat_env) -> ChatEnv:
         chat_env.update_codes(self.seminar_conclusion)
         chat_env.rewrite_codes("Finish Art Integration")
-        # chat_env.generate_images_from_codes()
+        chat_env.generate_images_from_codes()
         log_visualize(
             "**[Software Info]**:\n\n {}".format(get_info(chat_env.env_dict['directory'], self.log_filepath)))
         return chat_env
@@ -544,7 +544,6 @@ class TestErrorSummary(Phase):
         super().__init__(**kwargs)
 
     def update_phase_env(self, chat_env):
-        # chat_env.generate_images_from_codes()
         (exist_bugs_flag, test_reports) = chat_env.exist_bugs()
         self.phase_env.update({"task": chat_env.env_dict['task_prompt'],
                                "modality": chat_env.env_dict['modality'],

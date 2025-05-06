@@ -153,7 +153,12 @@ chat_chain.make_recruitment()
 #          Chat Chain
 # ----------------------------------------
 
-chat_chain.execute_chain()
+try:
+    chat_chain.execute_chain()
+except ValueError as e:
+    pass
+except Exception as e:
+    raise e
 
 end_t = time.time()
 # with open(f"result/{now[:now.rfind('-')]}{suffix}.txt", mode="a+") as rf:

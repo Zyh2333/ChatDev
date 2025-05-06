@@ -100,7 +100,7 @@ class OpenAIModel(ModelBackend):
                 num_max_completion_tokens = num_max_token - num_prompt_tokens
                 self.model_config_dict['max_tokens'] = num_max_completion_tokens
 
-            response = client.chat.completions.create(*args, **kwargs, model=self.model_type.value,
+            response = client.chat.completions.create(*args, **kwargs, model=ModelType.qwen25_32b_instruct.value,
                                                       **self.model_config_dict)
 
             cost = prompt_cost(
@@ -178,7 +178,7 @@ class ModelFactory:
 
     @staticmethod
     def create(model_type: ModelType, model_config_dict: Dict) -> ModelBackend:
-        default_model_type = ModelType.GPT_3_5_TURBO
+        default_model_type = ModelType.qwen25_32b_instruct
 
         if model_type in {
             ModelType.qwen25_32b_instruct,
